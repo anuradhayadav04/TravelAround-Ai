@@ -1,4 +1,10 @@
 import express from "express";
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "TravelAround AI Backend is running 🚀",
+  });
+});
 import mongoose from "mongoose";
 // import jwt from "jsonwebtoken"; // Removed JWT
 import User from "./models/User.js";
@@ -10,16 +16,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "TravelAround AI Backend is running 🚀",
-  });
-});
+
 
 // Routes - assumed imports based on usage
 import trips from "./routes/trips.js";
@@ -47,7 +49,11 @@ if (!process.env.SESSION_SECRET) {
 
 const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:3000"], // Explicit origins for credentials
+       origin: [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://travel-around-570lh4vo1-anuradha-s-projects.vercel.app"],
+
         credentials: true,
         methods: ["GET", "POST"]
     }
@@ -59,14 +65,15 @@ app.set('io', io);
 // Middleware
 app.use(express.json());
 
-// CORS Configuration for Sessions
-origin: [
+app.use(cors({
+  origin: [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://travel-around-ai.vercel.app/"
-    
-],
-credentials: true
+    "https://travel-around-570lh4vo1-anuradha-s-projects.vercel.app"
+  ],
+  credentials: true
+}));
+
 
 // Session Middleware
 const sessionMiddleware = session({
@@ -262,18 +269,6 @@ mongoose.connect(process.env.MONGO_URI)
     })
     .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-// Serve frontend only if it exists (optional)
-if (process.env.NODE_ENV === "production") {
-    const buildPath = path.join(__dirname, "../client/dist");
-
-    if (fs.existsSync(buildPath)) {
-        app.use(express.static(buildPath));
-
-        app.get("*", (req, res) => {
-            res.sendFile(path.join(buildPath, "index.html"));
-        });
-    }
-}
 
 // Start Server
 httpServer.listen(PORT, () => {
