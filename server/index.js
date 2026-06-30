@@ -14,6 +14,13 @@ import MongoStore from "connect-mongo";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "TravelAround AI Backend is running 🚀",
+  });
+});
+
 // Routes - assumed imports based on usage
 import trips from "./routes/trips.js";
 import bookingRoutes from "./routes/bookings.js";
