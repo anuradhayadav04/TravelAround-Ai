@@ -53,10 +53,13 @@ app.set('io', io);
 app.use(express.json());
 
 // CORS Configuration for Sessions
-app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"], // Match your frontend URL
-    credentials: true
-}));
+origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://travel-around-ai.vercel.app/"
+    
+],
+credentials: true
 
 // Session Middleware
 const sessionMiddleware = session({
@@ -252,14 +255,18 @@ mongoose.connect(process.env.MONGO_URI)
     })
     .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-// Serve Static files in Production
-const buildPath = path.join(__dirname, "../client/dist");
-app.use(express.static(buildPath));
+// Serve frontend only if it exists (optional)
+if (process.env.NODE_ENV === "production") {
+    const buildPath = path.join(__dirname, "../client/dist");
 
-// Standard SPA Catch-All
-app.get("*", (req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-});
+    if (fs.existsSync(buildPath)) {
+        app.use(express.static(buildPath));
+
+        app.get("*", (req, res) => {
+            res.sendFile(path.join(buildPath, "index.html"));
+        });
+    }
+}
 
 // Start Server
 httpServer.listen(PORT, () => {
